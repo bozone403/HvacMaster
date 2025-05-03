@@ -30,63 +30,92 @@ const quoteFormSchema = z.object({
 type QuoteFormData = z.infer<typeof quoteFormSchema>;
 
 // System sizing pricing calculator logic
-const calculateEstimate = (data: QuoteFormData) => {
-  // Base prices
-  const basePrices = {
-    furnace: {
-      economy: 5999,
-      'mid-tier': 6499,
-      premium: 7499,
-      unsure: 6499
+const calculateEstimate = (data: QuoteFormData): {minPrice: number, maxPrice: number, estimatedPrice: number} => {
+  // Base prices for furnaces (based on 2025 Calgary pricing guide)
+  const furnacePrices = {
+    economy: { // Single-Stage 95% AFUE
+      min: 4500,
+      max: 5500,
+      avg: 5000
     },
-    ac: {
-      economy: 6499,
-      'mid-tier': 6999,
-      premium: 8499,
-      unsure: 6999
+    'mid-tier': { // Two-Stage 96% AFUE
+      min: 5500,
+      max: 6500,
+      avg: 6000
     },
-    both: {
-      economy: 11999,
-      'mid-tier': 12999,
-      premium: 15499,
-      unsure: 12999
+    premium: { // Modulating/Variable 97%+ AFUE
+      min: 6500,
+      max: 8000,
+      avg: 7250
     },
-    other: {
-      economy: 3500,
-      'mid-tier': 4500,
-      premium: 5500,
-      unsure: 4500
+    unsure: { // Default to mid-tier
+      min: 5500,
+      max: 6500,
+      avg: 6000
     }
   };
   
-  // AC tonnage adjustments by tonnage size
-  const acTonnagePrice = {
-    '1.5': 0.85, // 15% less than base price
-    '2': 0.90,   // 10% less than base price
-    '2.5': 0.95, // 5% less than base price
-    '3': 1.0,    // Base tonnage - standard price
-    '3.5': 1.1,  // 10% more than base price
-    '4': 1.2,    // 20% more than base price
-    '5': 1.35    // 35% more than base price
+  // AC prices by tonnage (based on 2025 Calgary pricing guide)
+  const acPricesByTonnage = {
+    '1.5': {
+      min: 5600,
+      max: 6500,
+      avg: 6050
+    },
+    '2': {
+      min: 6000,
+      max: 7200,
+      avg: 6600
+    },
+    '2.5': {
+      min: 6400,
+      max: 7600,
+      avg: 7000
+    },
+    '3': {
+      min: 6800,
+      max: 8200,
+      avg: 7500
+    },
+    '3.5': {
+      min: 7200,
+      max: 8500,
+      avg: 7850
+    },
+    '4': {
+      min: 7500,
+      max: 8900,
+      avg: 8200
+    },
+    '5': {
+      min: 8000,
+      max: 9500,
+      avg: 8750
+    }
   };
   
-  // Get base price based on service type and budget
-  let basePrice = basePrices[data.serviceType][data.budget];
+  // For higher efficiency AC (18 SEER)
+  const premiumAcPrice = {
+    min: 8600,
+    max: 9800,
+    avg: 9200
+  };
   
-  // Adjust price based on AC tonnage if applicable
-  if ((data.serviceType === 'ac' || data.serviceType === 'both') && data.acTonnage) {
-    const tonnageFactor = acTonnagePrice[data.acTonnage];
-    if (data.serviceType === 'ac') {
-      basePrice = basePrice * tonnageFactor;
-    } else if (data.serviceType === 'both') {
-      // For both, adjust only the AC portion (roughly 45% of the combined price)
-      const furnacePortion = basePrice * 0.55;
-      const acPortion = basePrice * 0.45 * tonnageFactor;
-      basePrice = furnacePortion + acPortion;
-    }
-  }
+  // Service rates for other services (hourly)
+  const serviceRates = {
+    diagnostic: 175,
+    maintenance: 175,
+    emergency: 250,
+    other: 175
+  };
   
-  // Size adjustment factor (price per sq ft)
+  // Variables to calculate 
+  let basePrice = 0;
+  let estimatedPrice = 0;
+  let minPrice = 0;
+  let maxPrice = 0;
+  
+  // Adjustment factors
   let sizeFactor = 0;
   if (data.propertyType === 'residential') {
     sizeFactor = data.buildingSize > 2500 ? 0.5 : 0.3;
@@ -122,15 +151,79 @@ const calculateEstimate = (data: QuoteFormData) => {
     planning: 0.95
   }[data.installationTimeframe];
   
-  // Combine all factors
-  let estimatedPrice = (basePrice + sizeAdjustment) * propertyFactor * existingSystemFactor * timeframeFactor;
+  // Handle different service types with updated pricing
+  if (data.serviceType === 'furnace') {
+    // Get furnace price by budget/tier
+    basePrice = furnacePrices[data.budget].avg;
+    minPrice = furnacePrices[data.budget].min;
+    maxPrice = furnacePrices[data.budget].max;
+  } 
+  else if (data.serviceType === 'ac') {
+    // Use tonnage-specific pricing for AC
+    if (data.acTonnage) {
+      if (data.budget === 'premium') {
+        // For premium, use higher efficiency AC pricing (18 SEER)
+        basePrice = premiumAcPrice.avg;
+        minPrice = premiumAcPrice.min;
+        maxPrice = premiumAcPrice.max;
+      } else {
+        // Standard efficiency AC prices by tonnage (16 SEER)
+        basePrice = acPricesByTonnage[data.acTonnage].avg;
+        minPrice = acPricesByTonnage[data.acTonnage].min;
+        maxPrice = acPricesByTonnage[data.acTonnage].max;
+      }
+    }
+  } 
+  else if (data.serviceType === 'both') {
+    // For both furnace and AC, calculate separately and combine
+    const furnaceBase = furnacePrices[data.budget].avg;
+    const furnaceMin = furnacePrices[data.budget].min;
+    const furnaceMax = furnacePrices[data.budget].max;
+    
+    // AC pricing depends on tonnage
+    let acBase = 0;
+    let acMin = 0;
+    let acMax = 0;
+    
+    if (data.acTonnage) {
+      if (data.budget === 'premium') {
+        // Higher efficiency AC
+        acBase = premiumAcPrice.avg;
+        acMin = premiumAcPrice.min;
+        acMax = premiumAcPrice.max;
+      } else {
+        // Standard efficiency AC by tonnage
+        acBase = acPricesByTonnage[data.acTonnage].avg;
+        acMin = acPricesByTonnage[data.acTonnage].min;
+        acMax = acPricesByTonnage[data.acTonnage].max;
+      }
+    }
+    
+    // Combined price with a slight discount for bundling
+    basePrice = (furnaceBase + acBase) * 0.95; // 5% bundle discount
+    minPrice = (furnaceMin + acMin) * 0.9; // 10% bundle discount for min price
+    maxPrice = (furnaceMax + acMax) * 0.95; // 5% bundle discount for max price
+  } 
+  else if (data.serviceType === 'other') {
+    // For other services, use hourly service rates
+    const hourlyRate = serviceRates.other;
+    const estimatedHours = data.propertyType === 'commercial' ? 6 : data.propertyType === 'multi-family' ? 4 : 3;
+    basePrice = hourlyRate * estimatedHours;
+    minPrice = basePrice * 0.8; // 20% less for simple jobs
+    maxPrice = basePrice * 1.4; // 40% more for complex jobs
+  }
+  
+  // Combine all factors for estimated price
+  estimatedPrice = (basePrice + sizeAdjustment) * propertyFactor * existingSystemFactor * timeframeFactor;
+  
+  // Apply adjustment factors to min/max prices
+  minPrice = (minPrice + sizeAdjustment) * propertyFactor * existingSystemFactor * timeframeFactor;
+  maxPrice = (maxPrice + sizeAdjustment) * propertyFactor * existingSystemFactor * timeframeFactor;
   
   // Round to nearest $100
   estimatedPrice = Math.ceil(estimatedPrice / 100) * 100;
-  
-  // Calculate range: -10% to +15% of the estimated price
-  const minPrice = Math.floor(estimatedPrice * 0.9 / 100) * 100;
-  const maxPrice = Math.ceil(estimatedPrice * 1.15 / 100) * 100;
+  minPrice = Math.floor(minPrice / 100) * 100;
+  maxPrice = Math.ceil(maxPrice / 100) * 100;
   
   return {
     minPrice,
