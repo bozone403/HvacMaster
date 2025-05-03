@@ -5,9 +5,13 @@ import Footer from "@/components/Footer";
 import EmergencyHero from "@/components/EmergencyHero";
 import EmergencyForm from "@/components/EmergencyForm";
 import ServiceHighlights from "@/components/ServiceHighlights";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import WhyChooseUs from "@/components/WhyChooseUs";
 import BackToTop from "@/components/BackToTop";
+
+// Import our new conversion-focused components
+import BeforeAfterGallery from "@/components/BeforeAfterGallery";
+import EnergySavingsCalculator from "@/components/EnergySavingsCalculator";
+import EnhancedTestimonials from "@/components/EnhancedTestimonials";
+import AuthorityIndicators from "@/components/AuthorityIndicators";
 
 interface HomeProps {
   openBookingCalendar?: (service?: string) => void;
@@ -127,11 +131,17 @@ export default function Home({ openBookingCalendar }: HomeProps) {
           </div>
         </section>
         
-        {/* Why Choose Us Section */}
-        <WhyChooseUs />
+        {/* Before & After Transformation Gallery */}
+        <BeforeAfterGallery />
         
-        {/* Testimonials Section */}
-        <TestimonialsSection />
+        {/* Energy Savings Calculator */}
+        <EnergySavingsCalculator />
+        
+        {/* Enhanced Testimonials with Real Results */}
+        <EnhancedTestimonials />
+        
+        {/* Authority Indicators and Trust Badges */}
+        <AuthorityIndicators />
         
         {/* Call to Action Section */}
         <section className="bg-primary py-16">
