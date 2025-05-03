@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatPrice } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdvancedPricingCalculator from '@/components/AdvancedPricingCalculator';
+import CommercialJobCalculator from '@/components/CommercialJobCalculator';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -639,7 +640,22 @@ export default function Quote() {
               </TabsContent>
               
               <TabsContent value="advanced-calculator">
-                <AdvancedPricingCalculator />
+                <div className="space-y-8">
+                  <div className="flex justify-center mb-6">
+                    <Tabs defaultValue="residential" className="w-full max-w-md">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="residential">Residential</TabsTrigger>
+                        <TabsTrigger value="commercial">Commercial</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="residential" className="pt-4">
+                        <AdvancedPricingCalculator />
+                      </TabsContent>
+                      <TabsContent value="commercial" className="pt-4">
+                        <CommercialJobCalculator />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
