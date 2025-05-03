@@ -9,33 +9,33 @@ import BackToTop from '@/components/BackToTop';
 const galleryImages = [
   {
     id: 1,
-    src: 'https://images.unsplash.com/photo-1599619585752-c3edb42a414c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    alt: 'High-efficiency furnace installation - AfterHours HVAC',
+    src: '/images/471495287_1105250150983520_1386073747227411333_n.jpg',
+    alt: 'New furnace installation by AfterHours HVAC',
   },
   {
     id: 2,
-    src: 'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    alt: 'Ductwork installation in residential home',
+    src: '/images/473328419_1117024396472762_1664679628641010003_n.jpg',
+    alt: 'Completed ductwork installation in Calgary home',
   },
   {
     id: 3,
-    src: 'https://images.unsplash.com/photo-1581775231124-4f70b143b85c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    alt: 'AC condenser unit installation',
+    src: '/images/474665667_1124835912358277_83973285220661963_n.jpg',
+    alt: 'AC condenser unit installation by AfterHours HVAC',
   },
   {
     id: 4,
-    src: 'https://images.unsplash.com/photo-1627903509738-6d868723ba0f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    alt: 'Thermostat installation and programming',
+    src: '/images/472794268_1116016029906932_2148624852804770803_n.jpg',
+    alt: 'Custom HVAC system installation in progress',
   },
   {
     id: 5,
-    src: 'https://images.unsplash.com/photo-1580943943894-ea22268366cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    alt: 'HVAC technician servicing equipment',
+    src: '/images/478388339_1139888574186344_8720464797129552041_n.jpg',
+    alt: 'HVAC technician servicing equipment in Calgary',
   },
   {
     id: 6,
-    src: 'https://images.unsplash.com/photo-1591184510259-b6f1be3d7aff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    alt: 'Air duct cleaning in progress',
+    src: '/images/479331527_1139888470853021_6780587306293107855_n.jpg',
+    alt: 'High-efficiency furnace system installation',
   },
 ];
 
@@ -46,7 +46,7 @@ const projectShowcase = [
     title: 'High-Efficiency Furnace Upgrade',
     location: 'Calgary SW',
     description: 'Complete replacement of 20-year-old furnace with a new 96% AFUE two-stage model, featuring improved temperature control and significantly lower energy costs.',
-    image: 'https://images.unsplash.com/photo-1599619585752-c3edb42a414c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    image: '/images/471495287_1105250150983520_1386073747227411333_n.jpg',
     before: 'Noisy, inefficient 78% AFUE furnace with frequent breakdowns',
     after: 'Whisper-quiet operation, even heat ***REMOVED***ribution, 25% energy savings',
   },
@@ -55,7 +55,7 @@ const projectShowcase = [
     title: 'Whole-Home Air Conditioning',
     location: 'Airdrie, AB',
     description: 'New construction project featuring a complete HVAC system installation with high-SEER AC unit and zoned temperature control for maximum comfort.',
-    image: 'https://images.unsplash.com/photo-1581775231124-4f70b143b85c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    image: '/images/474665667_1124835912358277_83973285220661963_n.jpg',
     before: 'No central air conditioning, reliance on window units',
     after: 'Efficient central AC with smart thermostat control and consistent cooling',
   },
@@ -64,7 +64,7 @@ const projectShowcase = [
     title: 'Smart Home HVAC Integration',
     location: 'Calgary NW',
     description: 'Complete upgrade of existing HVAC controls with smart technology, including zone control, mobile app management, and energy monitoring.',
-    image: 'https://images.unsplash.com/photo-1627903509738-6d868723ba0f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    image: '/images/473080806_1117022926472909_3203550033440273916_n.jpg',
     before: 'Basic thermostat with limited programming and no remote access',
     after: 'Full smart control, occupancy sensing, and 18% reduction in energy usage',
   },
@@ -185,11 +185,11 @@ export default function Gallery() {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <a 
-                  href="tel:+1234567890" 
+                  href="tel:+14036136014" 
                   className="inline-flex items-center justify-center bg-white hover:bg-gray-100 text-gray-900 font-bold py-3 px-8 rounded-lg transition duration-300"
                 >
                   <i className="fas fa-phone mr-2"></i>
-                  Call Now
+                  (403) 613-6014
                 </a>
                 <a 
                   href="/quote" 
