@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'wouter';
 
 interface UrgencyPopupProps {
   onClose: () => void;
@@ -46,10 +47,10 @@ export default function UrgencyPopup({ onClose, displayDelay = 10000 }: UrgencyP
             </p>
           </div>
           
-          {/* Close Button */}
+          {/* Close Button - Made Larger and More Visible */}
           <button 
             onClick={onClose}
-            className="absolute top-2 right-3 text-white/70 hover:text-white"
+            className="absolute top-2 right-3 bg-gray-800 hover:bg-gray-700 rounded-full p-2 text-white/90 hover:text-white transition-colors z-20"
             aria-label="Close"
           >
             <X size={20} />
@@ -148,10 +149,10 @@ export default function UrgencyPopup({ onClose, displayDelay = 10000 }: UrgencyP
               </div>
             </div>
             
-            {/* CTA Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+            {/* CTA Buttons - Now with View Pricing Button */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button
-                className="sm:col-span-3 bg-primary hover:bg-red-800 text-white font-bold py-3 text-base animate-pulse group"
+                className="bg-primary hover:bg-red-800 text-white font-bold py-3 text-base animate-pulse group"
                 onClick={() => window.location.href = '/purchase'}
               >
                 <span className="group-hover:scale-105 transition-transform duration-200 inline-block">
@@ -161,11 +162,21 @@ export default function UrgencyPopup({ onClose, displayDelay = 10000 }: UrgencyP
               
               <Button
                 variant="outline"
-                className="sm:col-span-2 border-gray-600 text-white hover:bg-gray-800 transition-all"
-                onClick={() => window.location.href = '/quote'}
+                className="border-gray-600 text-white hover:bg-gray-800 transition-all"
+                onClick={() => window.location.href = '/pricing'}
               >
-                Get Free Quote
+                View All Pricing
               </Button>
+            </div>
+            
+            {/* Clear Close Option */}
+            <div className="mt-4 text-center">
+              <button 
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-300 text-sm"
+              >
+                No thanks, I'll pay full price
+              </button>
             </div>
           </div>
         </motion.div>
