@@ -5,17 +5,23 @@ import About from "@/pages/About";
 import Purchase from "@/pages/Purchase";
 import Referral from "@/pages/Referral";
 import Quote from "@/pages/Quote";
+import Gallery from "@/pages/Gallery";
+import Booking from "@/pages/Booking";
+import Contact from "@/pages/Contact";
 import NotFound from "@/pages/NotFound";
 import ExitIntentPopup from "@/components/modals/ExitIntentPopup";
 import BookingCalendar from "@/components/modals/BookingCalendar";
+import UrgencyPopup from "@/components/modals/UrgencyPopup";
 import PricingSection from "@/components/PricingSection";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 
+
 // Import all page components
 function App() {
   const [showExitPopup, setShowExitPopup] = useState(false);
+  const [showUrgencyPopup, setShowUrgencyPopup] = useState(false);
   const [showBookingCalendar, setShowBookingCalendar] = useState(false);
   const [bookingService, setBookingService] = useState<string>("");
 
@@ -67,20 +73,14 @@ function App() {
         <Route path="/referral" component={Referral} />
         <Route path="/purchase" component={Purchase} />
         
-        {/* Pages still in development */}
-        <Route path="/gallery">
-          {() => <div className="min-h-screen flex items-center justify-center">Gallery page coming soon</div>}
-        </Route>
+        {/* Completed Pages */}
+        <Route path="/gallery" component={Gallery} />
         <Route path="/pricing">
           {() => <div className="flex flex-col min-h-screen"><Header /><div className="flex-grow flex items-center justify-center"><PricingSection /></div><Footer /><BackToTop /></div>}
         </Route>
-        <Route path="/booking">
-          {() => <div className="min-h-screen flex items-center justify-center">Booking page coming soon</div>}
-        </Route>
+        <Route path="/booking" component={Booking} />
         <Route path="/quote" component={Quote} />
-        <Route path="/contact">
-          {() => <div className="min-h-screen flex items-center justify-center">Contact page coming soon</div>}
-        </Route>
+        <Route path="/contact" component={Contact} />
         <Route path="/purchase-confirmation">
           {() => <div className="min-h-screen flex items-center justify-center">Thank you for your purchase! We'll contact you shortly to confirm your installation details.</div>}
         </Route>
