@@ -197,8 +197,9 @@ export default function AdvancedPricingCalculator() {
       const opts = advancedOptions.furnace;
       
       // Add furnace unit
-      furnaceTotal.min += furnace.unit[opts.efficiency]?.min || furnace.unit.standard.min;
-      furnaceTotal.max += furnace.unit[opts.efficiency]?.max || furnace.unit.standard.max;
+      const efficiencyType = opts.efficiency as keyof typeof furnace.unit;
+      furnaceTotal.min += furnace.unit[efficiencyType]?.min || furnace.unit.standard.min;
+      furnaceTotal.max += furnace.unit[efficiencyType]?.max || furnace.unit.standard.max;
       
       // Add components based on options
       if (opts.includePlenum) {
@@ -250,8 +251,9 @@ export default function AdvancedPricingCalculator() {
       const tonnage = opts.tonnage || getAcTonnage(squareFootage);
       
       // Add AC unit
-      acTotal.min += ac.unit[tonnage]?.min || ac.unit['3ton'].min;
-      acTotal.max += ac.unit[tonnage]?.max || ac.unit['3ton'].max;
+      const tonnageType = tonnage as keyof typeof ac.unit;
+      acTotal.min += ac.unit[tonnageType]?.min || ac.unit['3ton'].min;
+      acTotal.max += ac.unit[tonnageType]?.max || ac.unit['3ton'].max;
       
       // Add components based on options
       if (opts.includeCoil) {
@@ -477,7 +479,7 @@ export default function AdvancedPricingCalculator() {
   const totals = calculateTotals();
   
   // Toggle system options
-  const toggleOption = (option: string) => {
+  const toggleOption = (option: keyof typeof options) => {
     setOptions(prev => ({
       ...prev,
       [option]: !prev[option]
@@ -485,7 +487,11 @@ export default function AdvancedPricingCalculator() {
   };
   
   // Update advanced options
-  const updateAdvancedOption = (category: string, option: string, value: any) => {
+  const updateAdvancedOption = <T extends keyof typeof advancedOptions, K extends keyof typeof advancedOptions[T]>(
+    category: T, 
+    option: K, 
+    value: any
+  ) => {
     setAdvancedOptions(prev => ({
       ...prev,
       [category]: {

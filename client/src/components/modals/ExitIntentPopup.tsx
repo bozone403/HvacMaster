@@ -1,110 +1,110 @@
-import { useState } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useState, useEffect } from 'react';
+import { Link } from 'wouter';
+import { X } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 interface ExitIntentPopupProps {
   onClose: () => void;
 }
 
-const exitIntentSchema = z.object({
-  phone: z.string().min(10, "Valid phone number is required"),
-});
-
-type ExitIntentFormValues = z.infer<typeof exitIntentSchema>;
-
 export default function ExitIntentPopup({ onClose }: ExitIntentPopupProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
   
-  const form = useForm<ExitIntentFormValues>({
-    resolver: zodResolver(exitIntentSchema),
-    defaultValues: {
-      phone: "",
-    },
-  });
-
-  async function onSubmit(data: ExitIntentFormValues) {
-    setIsSubmitting(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    try {
-      await apiRequest("POST", "/api/exit-intent", {
-        phone: data.phone,
-        discount: "$50 off emergency service",
-      });
+    if (email) {
+      // In a real app, we would send this to the server
+      // await fetch('/api/exit-intent-claims', {...})
       
+      setSubmitted(true);
       toast({
-        title: "Discount claimed!",
-        description: "We'll call you shortly to schedule your service.",
-        variant: "default",
+        title: "Success!",
+        description: "Your $250 discount has been claimed. Check your email for details.",
       });
-      
-      onClose();
-    } catch (error) {
-      console.error("Failed to submit exit intent form:", error);
-      toast({
-        title: "Failed to claim discount",
-        description: "Please try calling us directly.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
-  }
-
+  };
+  
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
-      <div className="bg-white rounded-xl p-8 max-w-md mx-4 relative">
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-        >
-          <i className="fas fa-times text-xl"></i>
-        </button>
-        
-        <div className="text-center">
-          <div className="text-[#DC2626] text-4xl mb-4">
-            <i className="fas fa-exclamation-circle"></i>
-          </div>
-          <h3 className="text-2xl font-bold text-[#121212] mb-2">Wait! Don't Leave Yet!</h3>
-          <p className="text-gray-600 mb-4">Get $50 off your emergency service call when you book online right now.</p>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-6">
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input 
-                        type="tel" 
-                        placeholder="Your Phone Number" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#DC2626] focus:border-[#DC2626]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-[#DC2626] text-white font-bold py-3 rounded-md hover:bg-red-700 transition"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Processing..." : "Claim My Discount"}
-              </Button>
-            </form>
-          </Form>
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm">
+      <Card className="max-w-lg w-full mx-4 overflow-hidden shadow-xl animate-in fade-in-80 zoom-in-90 duration-300">
+        <div className="bg-primary text-white p-4 flex justify-between items-center">
+          <h3 className="text-xl font-bold">Wait! Don't Leave Yet!</h3>
+          <button 
+            onClick={onClose}
+            className="text-white hover:text-white/80 transition-colors"
+            aria-label="Close popup"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-      </div>
+        
+        <CardContent className="p-6">
+          {!submitted ? (
+            <div className="space-y-4">
+              <h4 className="text-2xl font-bold text-center">Claim Your $250 Discount</h4>
+              
+              <p className="text-center text-muted-foreground mb-4">
+                Enter your email to receive your exclusive $250 discount voucher on any furnace or AC installation. Limited time offer!
+              </p>
+              
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                <p className="font-medium text-amber-800 text-center">
+                  This special offer is available to first-time visitors only. Don't miss out!
+                </p>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Input 
+                    type="email" 
+                    placeholder="Your email address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                    className="w-full py-6"
+                  />
+                </div>
+                
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90 py-6 text-lg">
+                  Claim My $250 Discount
+                </Button>
+              </form>
+              
+              <div className="text-center mt-4">
+                <button 
+                  onClick={onClose}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+                >
+                  No thanks, I don't need to save money
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6 py-8">
+              <div className="text-5xl mb-4">🎉</div>
+              <h4 className="text-2xl font-bold">Your Discount is on the Way!</h4>
+              <p className="text-muted-foreground">
+                We've sent your $250 discount voucher to <strong>{email}</strong>. Please check your inbox (and spam folder) for instructions on how to redeem it.
+              </p>
+              
+              <div className="pt-4">
+                <Button 
+                  onClick={onClose}
+                  className="bg-primary hover:bg-primary/90 px-6 py-2"
+                >
+                  Continue Browsing
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
