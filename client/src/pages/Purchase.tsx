@@ -108,6 +108,39 @@ const Purchase = () => {
   });
   const [checkoutStep, setCheckoutStep] = useState(1);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [activeCustomers, setActiveCustomers] = useState(Math.floor(Math.random() * 4) + 6); // Random 6-9 people
+  const [stockLevel, setStockLevel] = useState(Math.floor(Math.random() * 3) + 2); // Random 2-4 units left
+  const [timeRemaining, setTimeRemaining] = useState(24 * 60 * 60); // 24 hours in seconds
+  
+  // Countdown timer for limited-time offer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => Math.max(0, prev - 1));
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+  
+  // Format the time remaining
+  const formatTimeRemaining = () => {
+    const hours = Math.floor(timeRemaining / 3600);
+    const minutes = Math.floor((timeRemaining % 3600) / 60);
+    const seconds = timeRemaining % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
+  // Update active customers randomly
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // 50% chance to change the number of active customers
+      if (Math.random() > 0.5) {
+        setActiveCustomers(Math.floor(Math.random() * 4) + 6); // Random 6-9 people
+      }
+    }, 30000); // Every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
   
   useEffect(() => {
     // Get the product ID from URL query params
@@ -582,6 +615,19 @@ const Purchase = () => {
               <div className="bg-gray-900 rounded-xl p-6 sticky top-6">
                 <h2 className="text-xl font-bold text-white mb-4">Order Summary</h2>
                 
+                {/* Limited Time Offer Banner */}
+                <div className="bg-gradient-to-r from-red-800 to-red-600 -mx-6 px-6 py-3 mb-4 -mt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white font-bold text-sm">LIMITED TIME OFFER</p>
+                      <p className="text-white/80 text-xs">Price increase coming soon</p>
+                    </div>
+                    <div className="bg-black/30 px-3 py-1 rounded-md">
+                      <span className="font-mono text-white font-bold">{formatTimeRemaining()}</span>
+                    </div>
+                  </div>
+                </div>
+                
                 <div className="mb-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="bg-gray-800 w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0">
@@ -596,6 +642,25 @@ const Purchase = () => {
                   <div className="border-t border-gray-800 pt-4">
                     <p className="text-gray-400 text-sm mb-2">{product.description}</p>
                   </div>
+                </div>
+                
+                {/* Social Proof */}
+                <div className="mb-6 bg-gray-800/50 p-3 rounded-lg">
+                  <div className="flex items-center mb-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <p className="text-sm text-gray-300">
+                      <span className="text-white">{activeCustomers} people</span> viewing this offer
+                    </p>
+                  </div>
+                  
+                  {product.category !== 'maintenance' && (
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                      <p className="text-sm text-gray-300">
+                        Only <span className="text-white font-bold">{stockLevel} units</span> left at this price
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="border-t border-gray-800 pt-4">
@@ -622,8 +687,26 @@ const Purchase = () => {
                 <div className="mt-6 text-sm text-gray-500">
                   <p>Your data is secured with 256-bit SSL encryption.</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <i className="fas fa-lock text-green-500"></i>
+                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
                     <span>Secure transaction</span>
+                  </div>
+                </div>
+                
+                {/* Trust Badges */}
+                <div className="mt-4 border-t border-gray-800 pt-4">
+                  <p className="text-xs text-center text-gray-500 mb-2">TRUSTED BY THOUSANDS OF ALBERTANS</p>
+                  <div className="flex justify-center items-center space-x-4">
+                    <div className="w-16 h-8 bg-gray-800 rounded flex items-center justify-center">
+                      <span className="text-xs font-bold text-gray-300">BBB A+</span>
+                    </div>
+                    <div className="w-16 h-8 bg-gray-800 rounded flex items-center justify-center">
+                      <span className="text-xs font-bold text-gray-300">ENERGY⭐</span>
+                    </div>
+                    <div className="w-16 h-8 bg-gray-800 rounded flex items-center justify-center">
+                      <span className="text-xs font-bold text-gray-300">HC Cert</span>
+                    </div>
                   </div>
                 </div>
               </div>

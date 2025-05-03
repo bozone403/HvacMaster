@@ -57,6 +57,26 @@ function App() {
     setShowExitPopup(false);
   };
 
+  const closeUrgencyPopup = () => {
+    setShowUrgencyPopup(false);
+    // Set cookie to prevent showing again for 24 hours
+    localStorage.setItem("urgencyPopupShown", "true");
+  };
+  
+  // Show urgency popup after 30 seconds on pages related to purchasing
+  useEffect(() => {
+    const path = window.location.pathname;
+    const purchaseRelatedPages = ["/purchase", "/quote", "/pricing", "/booking"];
+    
+    if (purchaseRelatedPages.some(page => path.includes(page)) && !localStorage.getItem("urgencyPopupShown")) {
+      const timer = setTimeout(() => {
+        setShowUrgencyPopup(true);
+      }, 30000); // 30 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <>
       <Switch>
@@ -97,6 +117,10 @@ function App() {
           onClose={closeBookingCalendar} 
           service={bookingService}
         />
+      )}
+
+      {showUrgencyPopup && (
+        <UrgencyPopup onClose={closeUrgencyPopup} />
       )}
     </>
   );
