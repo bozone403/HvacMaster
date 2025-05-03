@@ -19,7 +19,7 @@ const defaultServiceCards: ServiceCard[] = [
   {
     id: 'furnace',
     title: 'Premium Furnace Installation',
-    description: 'Experience industry-leading 97%+ AFUE systems that slash heating bills by up to 40%. Our master-level installations exceed all building codes with lifetime craftsmanship guarantee. Whisper-quiet operation with perfect temperature ***REMOVED***ribution.',
+    description: 'Experience industry-leading 97%+ AFUE systems that slash heating bills by up to 40%. Our master-level installations exceed all building codes with lifetime craftsmanship guarantee. Whisper-quiet operation with perfect temperature distribution.',
     icon: 'fa-fire-alt',
     image: 'https://images.unsplash.com/photo-1503575240752-d2d1a4be4031?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
     price: '$6,999',

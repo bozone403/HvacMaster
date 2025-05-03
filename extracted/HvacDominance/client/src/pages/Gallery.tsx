@@ -60,7 +60,7 @@ const galleryImages = [
   { id: 12, src: ductworkImage, alt: "Custom ductwork installation", category: "ductwork" },
   { id: 13, src: image1, alt: "Meticulous ductwork setup", category: "ductwork" },
   { id: 14, src: img3, alt: "Commercial ductwork project", category: "ductwork" },
-  { id: 15, src: img9, alt: "Air ***REMOVED***ribution system", category: "ductwork" },
+  { id: 15, src: img9, alt: "Air distribution system", category: "ductwork" },
   { id: 16, src: img13, alt: "Sheet metal fabrication", category: "ductwork" },
   { id: 17, src: img16, alt: "Professional duct sealing", category: "ductwork" },
   { id: 18, src: img18, alt: "Commercial vent system", category: "ductwork" },

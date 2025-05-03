@@ -48,7 +48,7 @@ const projectShowcase = [
     description: 'Complete replacement of 20-year-old furnace with a new 96% AFUE two-stage model, featuring improved temperature control and significantly lower energy costs.',
     image: '/images/471495287_1105250150983520_1386073747227411333_n.jpg',
     before: 'Noisy, inefficient 78% AFUE furnace with frequent breakdowns',
-    after: 'Whisper-quiet operation, even heat ***REMOVED***ribution, 25% energy savings',
+    after: 'Whisper-quiet operation, even heat distribution, 25% energy savings',
   },
   {
     id: 2,

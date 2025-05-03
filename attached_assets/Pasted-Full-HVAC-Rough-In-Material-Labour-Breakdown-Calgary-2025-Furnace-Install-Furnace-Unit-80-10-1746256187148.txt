@@ -224,7 +224,7 @@ Permit Fee (City of Calgary)	Typical	$500 – $2,000
 Firestopping (per penetration)	Code sealed	$45 – $65
 
 🔧 1. Equipment & Material Logistics
-Freight/Shipping Fees – $200–$1,000 depending on size/***REMOVED***ance
+Freight/Shipping Fees – $200–$1,000 depending on size/distance
 
 Crane or Boom Lift Rentals – $900+/day
 
@@ -237,7 +237,7 @@ WCB (Workers' Comp) Premiums – % of labour
 
 Payroll Burden – EI/CPP, benefits, etc. ~15–25% on top of wages
 
-Travel Time Compensation – 1–2 hrs added depending on ***REMOVED***ance
+Travel Time Compensation – 1–2 hrs added depending on distance
 
 Meal/Per Diem for remote jobs – $30–$60/day per tech
 

@@ -1,6 +1,6 @@
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-*.tar.gz
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gzextracted/HvacDominance/.env.local
