@@ -28,11 +28,18 @@ export default function BookingCalendar({ onClose, service = 'Consultation' }: B
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
+  // TimeSlot type for the booking calendar
+  type TimeSlot = {
+    id: string;
+    time: string;
+    available: boolean;
+  };
+
   // Generate available time slots for the selected date
-  const getTimeSlots = () => {
+  const getTimeSlots = (): TimeSlot[] => {
     if (!date) return [];
     
-    const slots = [];
+    const slots: TimeSlot[] = [];
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
     const startHour = isToday ? Math.max(8, now.getHours() + 1) : 8; // Start at 8 AM or next hour if today

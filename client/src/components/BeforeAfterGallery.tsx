@@ -15,24 +15,24 @@ const transformationCases: BeforeAfterImage[] = [
   {
     id: '1',
     title: 'Outdated Furnace Replacement',
-    before: 'https://images.unsplash.com/photo-1585785457833-fe66c7363a58?q=80&w=500',
-    after: 'https://images.unsplash.com/photo-1519747965239-0583e3b34e32?q=80&w=500',
+    before: '/images/471426275_1105250467650155_751799492974306867_n.jpg',
+    after: '/images/471495287_1105250150983520_1386073747227411333_n.jpg',
     description: 'This Calgary family was dealing with cold spots and high energy bills due to an inefficient 15-year-old furnace. We installed a high-efficiency modulating system.',
     savingsText: 'Reduced heating costs by 32%'
   },
   {
     id: '2',
     title: 'Inefficient AC Upgrade',
-    before: 'https://images.unsplash.com/photo-1536334906170-ffa95819c4d4?q=80&w=500',
-    after: 'https://images.unsplash.com/photo-1623810430580-ceb2ac1d32b8?q=80&w=500',
+    before: '/images/474154540_1123772532464615_2768856845004807639_n.jpg',
+    after: '/images/474665667_1124835912358277_83973285220661963_n.jpg',
     description: 'This home had an outdated 10 SEER air conditioner that struggled during summer heat waves. We installed a modern 18 SEER system with smart controls.',
     savingsText: 'Cooling costs reduced by 45%'
   },
   {
     id: '3',
     title: 'Complete HVAC Transformation',
-    before: 'https://images.unsplash.com/photo-1593143303983-67e8aacfdcfa?q=80&w=500',
-    after: 'https://images.unsplash.com/photo-1642543492523-f15cc6d9fa6c?q=80&w=500',
+    before: '/images/472761308_1116569543184914_2305615839065844388_n.jpg',
+    after: '/images/478388339_1139888574186344_8720464797129552041_n.jpg',
     description: 'This Edmonton residence had outdated, inefficient HVAC equipment that failed during extreme weather. We installed a complete high-efficiency system.',
     savingsText: 'Annual energy savings of $1,250'
   }
