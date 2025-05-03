@@ -1,300 +1,178 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { format, addDays } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import BackToTop from '@/components/BackToTop';
-
-// UI Components
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useState, useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { createAppointmentEvent, getGoogleCalendarLinkUrl } from '@/lib/googleCalendar';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { apiRequest } from '@/lib/queryClient';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { CalendarIcon, CheckCircle2, Clock, MapPin, Phone } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
-// Types and Utilities
+// Booking form schema
+const bookingFormSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  phone: z.string().min(10, { message: 'Phone number must be at least 10 digits.' }),
+  address: z.string().optional(),
+  service: z.string().min(1, { message: 'Please select a service.' }),
+  date: z.date({ required_error: 'Please select a date.' }),
+  timeSlot: z.string().min(1, { message: 'Please select a time slot.' }),
+  notes: z.string().optional(),
+});
+
 type TimeSlot = {
   id: string;
   time: string;
   available: boolean;
 };
 
-const serviceTypes = [
-  { id: 'furnace-consultation', label: 'Furnace Consultation' },
-  { id: 'ac-consultation', label: 'AC Consultation' },
-  { id: 'maintenance', label: 'Maintenance Visit' },
-  { id: 'emergency', label: 'Emergency Service' },
-  { id: 'installation', label: 'New Installation' },
-];
-
-// Generate time slots from 8 AM to 6 PM
-const generateTimeSlots = (): TimeSlot[] => {
-  const slots: TimeSlot[] = [];
-  const hours = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'];
-  
-  hours.forEach((time, index) => {
-    // Randomly mark some slots as unavailable for demo purposes
-    const available = Math.random() > 0.3;
-    slots.push({
-      id: `slot-${index}`,
-      time,
-      available,
-    });
-  });
-  
-  return slots;
-};
-
-// Form schema for booking validation
-const bookingFormSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  email: z.string().email("Valid email is required"),
-  phone: z.string().min(10, "Valid phone number is required"),
-  serviceType: z.string().min(1, "Please select a service"),
-  date: z.date({
-    required_error: "Please select a date",
-  }),
-  time: z.string().min(1, "Please select a time"),
-  notes: z.string().optional(),
-});
-
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
 export default function Booking() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots());
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [calendarLink, setCalendarLink] = useState('');
   const { toast } = useToast();
-  
-  // Initialize form
+
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      serviceType: "furnace-consultation",
-      notes: "",
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      service: '',
+      notes: '',
     },
   });
-  
-  // Regenerate time slots when date changes (simulating availability)
-  const handleDateChange = (date: Date | undefined) => {
-    setSelectedDate(date);
-    form.setValue("date", date as Date);
-    setTimeSlots(generateTimeSlots());
-    setSelectedTime(null);
-    form.setValue("time", "");
-  };
-  
+
+  // Generate time slots for the selected date (8am to 8pm, 1.5 hour intervals)
+  useEffect(() => {
+    if (selectedDate) {
+      const slots: TimeSlot[] = [];
+      const now = new Date();
+      const isToday = selectedDate.toDateString() === now.toDateString();
+      const startHour = isToday ? Math.max(8, now.getHours() + 1) : 8; // Start at 8 AM or next hour if today
+      
+      for (let hour = startHour; hour < 20; hour++) {
+        // Skip generating past slots for today
+        if (isToday && hour < now.getHours()) continue;
+
+        const isPM = hour >= 12;
+        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+        
+        // Generate two slots per hour: XX:00 and XX:30
+        const times = [0, 30];
+        times.forEach(minutes => {
+          // For today, skip times that have already passed
+          if (isToday && hour === now.getHours() && minutes <= now.getMinutes()) return;
+          
+          slots.push({
+            id: `${hour}-${minutes}`,
+            time: `${displayHour}:${minutes === 0 ? '00' : minutes} ${isPM ? 'PM' : 'AM'}`,
+            available: Math.random() > 0.3, // Simulate some slots being unavailable
+          });
+        });
+      }
+      
+      setTimeSlots(slots);
+      form.setValue('timeSlot', ''); // Reset time slot when date changes
+    }
+  }, [selectedDate, form]);
+
+  // Handle time slot selection
   const handleTimeSelect = (slot: TimeSlot) => {
     if (!slot.available) return;
-    
-    setSelectedTime(slot.time);
-    form.setValue("time", slot.time);
+    form.setValue('timeSlot', slot.time);
   };
-  
+
+  // Submit booking
   const onSubmit = async (data: BookingFormValues) => {
     setIsSubmitting(true);
     
     try {
-      // Submit booking data to API
-      await apiRequest("POST", "/api/bookings", data);
+      // In a real app, we would save the booking to the database here
+      // await fetch('/api/bookings', {...})
       
-      toast({
-        title: "Appointment Scheduled!",
-        description: `Your appointment is confirmed for ${format(data.date, "MMMM d, yyyy")} at ${data.time}`,
+      // Create Google Calendar event
+      const calendarEvent = createAppointmentEvent({
+        customerName: data.name,
+        phone: data.phone,
+        service: data.service,
+        address: data.address,
+        date: data.date.toISOString(),
+        timeSlot: data.timeSlot,
       });
       
-      // Reset form and show success message
-      form.reset();
+      // Generate calendar link
+      const googleCalendarLink = getGoogleCalendarLinkUrl(calendarEvent);
+      setCalendarLink(googleCalendarLink);
+      
       setIsSuccess(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error("Failed to book appointment:", error);
       toast({
-        title: "Booking Failed",
-        description: "There was an error scheduling your appointment. Please try again or call us directly.",
-        variant: "destructive",
+        title: 'Booking Successful!',
+        description: 'Your appointment has been scheduled. Check your email for confirmation.',
+      });
+    } catch (error) {
+      console.error('Error submitting booking:', error);
+      toast({
+        title: 'Something went wrong',
+        description: 'Could not submit your booking. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
+  // Reset form
+  const handleReset = () => {
+    setIsSuccess(false);
+    form.reset();
+    setSelectedDate(undefined);
+    setTimeSlots([]);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-black">
+    <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="py-20 bg-black relative overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-black to-black/90 z-10" />
-            <div className="absolute inset-0 bg-black opacity-80" />
-          </div>
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <motion.div 
-              className="text-center max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                Book Your <span className="text-primary">HVAC Service</span>
-              </h1>
-              <p className="text-xl text-gray-300 mb-8">
-                Schedule a convenient time for your consultation, installation, or service
-              </p>
-            </motion.div>
-          </div>
-        </section>
-        
-        {/* Booking Section */}
-        <section className="py-16 bg-gray-900">
+        <section className="py-12 bg-gradient-to-b from-primary/10 to-background">
           <div className="container mx-auto px-4">
-            {isSuccess ? (
-              <motion.div 
-                className="bg-black p-8 rounded-xl border border-gray-800 max-w-3xl mx-auto text-center"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                
-                <h2 className="text-3xl font-bold text-white mb-4">Appointment Confirmed!</h2>
-                <p className="text-gray-300 text-lg mb-8">
-                  We've received your booking request. You'll receive a confirmation email shortly with all the details.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <Button 
-                    onClick={() => setIsSuccess(false)}
-                    className="bg-primary hover:bg-red-700 text-white font-bold"
-                  >
-                    Book Another Appointment
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => window.location.href = "/"}
-                  >
-                    Return to Home
-                  </Button>
-                </div>
-              </motion.div>
-            ) : (
-              <div className="max-w-5xl mx-auto">
-                <motion.div 
-                  className="bg-black rounded-xl overflow-hidden shadow-xl border border-gray-800"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-5">
-                    {/* Calendar Column */}
-                    <div className="lg:col-span-2 p-6 border-r border-gray-800">
-                      <h2 className="text-2xl font-bold text-white mb-6">Select a Date & Time</h2>
-                      
-                      <div className="mb-6">
-                        <Calendar
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={handleDateChange}
-                          disabled={{ before: new Date() }}
-                          className="border border-gray-800 rounded-lg p-2 bg-black"
-                        />
-                      </div>
-                      
-                      <div className="mt-8">
-                        <h3 className="text-lg font-medium text-white mb-4">Available Time Slots</h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          {timeSlots.map((slot) => (
-                            <Button
-                              key={slot.id}
-                              variant={selectedTime === slot.time ? "default" : "outline"}
-                              className={cn(
-                                "text-sm h-10",
-                                selectedTime === slot.time && "bg-primary",
-                                !slot.available && "opacity-50 cursor-not-allowed"
-                              )}
-                              disabled={!slot.available}
-                              onClick={() => handleTimeSelect(slot)}
-                            >
-                              {slot.time}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Form Column */}
-                    <div className="lg:col-span-3 p-6">
-                      <h2 className="text-2xl font-bold text-white mb-6">Your Information</h2>
-                      
+            <h1 className="text-4xl font-bold text-center mb-8">Schedule Your HVAC Service</h1>
+            <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">
+              Book your preferred date and time for a consultation, inspection or service call. Our team will confirm your appointment within 2 hours during business hours.
+            </p>
+            
+            {!isSuccess ? (
+              <div className="grid md:grid-cols-12 gap-8 max-w-5xl mx-auto">
+                <div className="md:col-span-7 space-y-8">
+                  <Card>
+                    <CardContent className="pt-6">
                       <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name="serviceType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-white">Service Type</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="bg-gray-800 border-gray-700 focus:ring-primary">
-                                      <SelectValue placeholder="Select service type" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent className="bg-gray-800 border-gray-700">
-                                    {serviceTypes.map((type) => (
-                                      <SelectItem key={type.id} value={type.id} className="text-white hover:bg-gray-700">
-                                        {type.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                          <div className="grid md:grid-cols-2 gap-6">
                             <FormField
                               control={form.control}
                               name="name"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-white">Full Name</FormLabel>
+                                  <FormLabel>Full Name</FormLabel>
                                   <FormControl>
-                                    <Input 
-                                      {...field} 
-                                      className="bg-gray-800 border-gray-700 text-white focus:ring-primary" 
-                                    />
+                                    <Input placeholder="Your full name" {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -306,12 +184,9 @@ export default function Booking() {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-white">Phone Number</FormLabel>
+                                  <FormLabel>Phone Number</FormLabel>
                                   <FormControl>
-                                    <Input 
-                                      {...field} 
-                                      className="bg-gray-800 border-gray-700 text-white focus:ring-primary" 
-                                    />
+                                    <Input placeholder="Your phone number" {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -324,30 +199,9 @@ export default function Booking() {
                             name="email"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-white">Email Address</FormLabel>
+                                <FormLabel>Email Address</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    type="email"
-                                    className="bg-gray-800 border-gray-700 text-white focus:ring-primary" 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {/* Hidden fields for date and time */}
-                          <FormField
-                            control={form.control}
-                            name="date"
-                            render={({ field }) => (
-                              <FormItem className="hidden">
-                                <FormControl>
-                                  <Input 
-                                    {...field}
-                                    value={field.value ? field.value.toISOString() : ""}
-                                  />
+                                  <Input placeholder="Your email address" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -356,27 +210,118 @@ export default function Booking() {
                           
                           <FormField
                             control={form.control}
-                            name="time"
+                            name="address"
                             render={({ field }) => (
-                              <FormItem className="hidden">
+                              <FormItem>
+                                <FormLabel>Service Address <span className="text-muted-foreground">(Optional)</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} />
+                                  <Input placeholder="Where should we provide service?" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+                          
+                          <FormField
+                            control={form.control}
+                            name="service"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Service Type</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a service" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="emergency">Emergency Repair</SelectItem>
+                                    <SelectItem value="maintenance">Preventative Maintenance</SelectItem>
+                                    <SelectItem value="install-furnace">Furnace Installation</SelectItem>
+                                    <SelectItem value="install-ac">AC Installation</SelectItem>
+                                    <SelectItem value="inspection">HVAC Inspection</SelectItem>
+                                    <SelectItem value="consultation">Consultation</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="grid md:grid-cols-2 gap-6">
+                            <FormField
+                              control={form.control}
+                              name="date"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                  <FormLabel>Preferred Date</FormLabel>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant={"outline"}
+                                          className={cn(
+                                            "w-full pl-3 text-left font-normal",
+                                            !field.value && "text-muted-foreground"
+                                          )}
+                                        >
+                                          {field.value ? (
+                                            format(field.value, "PPP")
+                                          ) : (
+                                            <span>Pick a date</span>
+                                          )}
+                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={field.value}
+                                        onSelect={(date) => {
+                                          field.onChange(date);
+                                          setSelectedDate(date || undefined);
+                                        }}
+                                        disabled={(date) => 
+                                          date < new Date(new Date().setHours(0, 0, 0, 0)) ||
+                                          date > new Date(new Date().setMonth(new Date().getMonth() + 3)) ||
+                                          date.getDay() === 0 // Disable Sundays
+                                        }
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="timeSlot"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Preferred Time</FormLabel>
+                                  <FormControl>
+                                    <Input readOnly value={field.value} placeholder="Select a date first" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                           
                           <FormField
                             control={form.control}
                             name="notes"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-white">Additional Notes (Optional)</FormLabel>
+                                <FormLabel>Additional Notes <span className="text-muted-foreground">(Optional)</span></FormLabel>
                                 <FormControl>
-                                  <textarea 
+                                  <Textarea 
+                                    placeholder="Tell us anything else we should know" 
+                                    className="resize-none" 
                                     {...field} 
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-md p-3 text-white focus:ring-primary focus:border-primary min-h-[100px]"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -384,182 +329,195 @@ export default function Booking() {
                             )}
                           />
                           
-                          {/* Appointment Summary */}
-                          {selectedDate && selectedTime && (
-                            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mt-6">
-                              <h3 className="text-white font-medium mb-2">Appointment Summary</h3>
-                              <div className="flex justify-between items-center text-gray-300">
-                                <div>
-                                  <div className="flex items-center">
-                                    <CalendarIcon className="w-4 h-4 mr-2 text-primary" />
-                                    <span>{format(selectedDate, "MMMM d, yyyy")}</span>
-                                  </div>
-                                  <div className="flex items-center mt-1">
-                                    <svg className="w-4 h-4 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>{selectedTime}</span>
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-xs bg-primary text-white px-3 py-1 rounded-full">
-                                    {serviceTypes.find(type => type.id === form.getValues().serviceType)?.label || "Service"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          
                           <Button 
                             type="submit" 
-                            className="w-full bg-primary hover:bg-red-700 text-white font-bold mt-6 py-3"
-                            disabled={isSubmitting || !selectedDate || !selectedTime}
+                            className="w-full bg-primary hover:bg-primary/90" 
+                            disabled={isSubmitting}
                           >
-                            {isSubmitting ? "Processing..." : "Confirm Booking"}
+                            {isSubmitting ? 'Processing...' : 'Book Appointment'}
                           </Button>
                         </form>
                       </Form>
-                    </div>
-                  </div>
-                </motion.div>
+                    </CardContent>
+                  </Card>
+                </div>
                 
-                {/* Information Boxes */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-                  <motion.div 
-                    className="bg-black p-6 rounded-xl border border-gray-800"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                  >
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                      <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Flexible Scheduling</h3>
-                    <p className="text-gray-400">Book appointments that fit your schedule, including evenings and weekends</p>
-                  </motion.div>
-                  
-                  <motion.div 
-                    className="bg-black p-6 rounded-xl border border-gray-800"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                  >
-                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
-                      <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Confirmed Instantly</h3>
-                    <p className="text-gray-400">Get immediate confirmation of your appointment with email verification</p>
-                  </motion.div>
-                  
-                  <motion.div 
-                    className="bg-black p-6 rounded-xl border border-gray-800"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                  >
-                    <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">No Cancellation Fees</h3>
-                    <p className="text-gray-400">Reschedule or cancel up to 24 hours before your appointment with no penalties</p>
-                  </motion.div>
+                <div className="md:col-span-5">
+                  <Card className="bg-muted/50 h-full">
+                    <CardContent className="pt-6">
+                      <h3 className="text-xl font-semibold mb-4">Available Time Slots</h3>
+                      {selectedDate ? (
+                        <>
+                          <p className="text-muted-foreground mb-4">
+                            Available times for {format(selectedDate, 'EEEE, MMMM do')}:
+                          </p>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            {timeSlots.map((slot) => (
+                              <Button
+                                key={slot.id}
+                                variant={form.getValues().timeSlot === slot.time ? 'default' : 'outline'}
+                                className={cn(
+                                  'justify-start',
+                                  !slot.available && 'opacity-50 cursor-not-allowed'
+                                )}
+                                onClick={() => handleTimeSelect(slot)}
+                                disabled={!slot.available}
+                              >
+                                <Clock className="mr-2 h-4 w-4" />
+                                {slot.time}
+                              </Button>
+                            ))}
+                          </div>
+                          
+                          {timeSlots.length === 0 && (
+                            <p className="text-center text-muted-foreground py-6">
+                              No available slots for this date. Please select another date.
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-center py-12">
+                          <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground/60 mb-4" />
+                          <p className="text-muted-foreground">
+                            Select a date to see available time slots
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-8 space-y-4 pt-4 border-t">
+                        <h3 className="text-lg font-medium">Need Immediate Service?</h3>
+                        <p className="text-sm text-muted-foreground">
+                          For urgent issues requiring same-day service, please call us directly:
+                        </p>
+                        <div className="flex items-center">
+                          <Phone className="h-5 w-5 mr-2 text-primary" />
+                          <a href="tel:+14034014822" className="text-lg font-bold hover:text-primary">(403) 401-4822</a>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
+            ) : (
+              <Card className="max-w-3xl mx-auto">
+                <CardContent className="pt-6 text-center">
+                  <div className="mb-6">
+                    <CheckCircle2 className="mx-auto h-16 w-16 text-green-500 mb-4" />
+                    <h2 className="text-2xl font-bold">Booking Confirmed!</h2>
+                    <p className="text-muted-foreground mt-2">
+                      We've received your booking request and will confirm your appointment within 2 hours (during business hours).
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4 text-left border p-4 rounded-lg bg-muted/30 mb-6">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Name</p>
+                        <p className="font-medium">{form.getValues().name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium">{form.getValues().phone}</p>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-muted-foreground">Service</p>
+                      <p className="font-medium">{form.getValues().service}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Date</p>
+                        <p className="font-medium">{format(form.getValues().date, 'PPP')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Time</p>
+                        <p className="font-medium">{form.getValues().timeSlot}</p>
+                      </div>
+                    </div>
+                    
+                    {form.getValues().address && (
+                      <div>
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">Service Address</p>
+                            <p className="font-medium">{form.getValues().address}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <a 
+                      href={calendarLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full"
+                    >
+                      <Button variant="outline" className="w-full" type="button">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        Add to Google Calendar
+                      </Button>
+                    </a>
+                    
+                    <Button onClick={handleReset} className="w-full" variant="default">
+                      Book Another Appointment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </section>
         
-        {/* FAQ Section */}
-        <section className="py-16 bg-black">
+        <section className="py-16 bg-background">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-white mb-10 text-center">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Why Choose AfterHours HVAC?</h2>
             
-            <div className="max-w-3xl mx-auto space-y-6">
-              <motion.div 
-                className="bg-gray-900 rounded-lg p-6 border border-gray-800"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-xl font-bold text-white mb-3">How long does a typical consultation take?</h3>
-                <p className="text-gray-400">Our standard consultations typically take 60-90 minutes, depending on the complexity of your HVAC needs and the size of your home.</p>
-              </motion.div>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-muted/30 p-6 rounded-lg text-center">
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Clock className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Extended Hours</h3>
+                <p className="text-muted-foreground">
+                  We're available nights and weekends when other HVAC companies are closed. Your comfort doesn't wait, and neither do we.
+                </p>
+              </div>
               
-              <motion.div 
-                className="bg-gray-900 rounded-lg p-6 border border-gray-800"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-xl font-bold text-white mb-3">Do I need to be home for the appointment?</h3>
-                <p className="text-gray-400">Yes, we require an adult (18+) to be present during all consultations and service appointments to provide access and approve any work.</p>
-              </motion.div>
+              <div className="bg-muted/30 p-6 rounded-lg text-center">
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Fast Response Time</h3>
+                <p className="text-muted-foreground">
+                  Quick booking confirmation and rapid dispatch of technicians means your HVAC issues are resolved promptly.
+                </p>
+              </div>
               
-              <motion.div 
-                className="bg-gray-900 rounded-lg p-6 border border-gray-800"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-xl font-bold text-white mb-3">How soon can I get an appointment?</h3>
-                <p className="text-gray-400">For standard consultations and maintenance, we typically can schedule within 1-3 business days. Emergency services are available 24/7 with same-day response.</p>
-              </motion.div>
-              
-              <motion.div 
-                className="bg-gray-900 rounded-lg p-6 border border-gray-800"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-xl font-bold text-white mb-3">Is there a fee for consultations?</h3>
-                <p className="text-gray-400">Standard HVAC consultations are $175, which is waived if you proceed with installation. Maintenance plan members receive free consultations.</p>
-              </motion.div>
+              <div className="bg-muted/30 p-6 rounded-lg text-center">
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Quality Guarantee</h3>
+                <p className="text-muted-foreground">
+                  All our work is backed by our satisfaction guarantee. If you're not happy with our service, we'll make it right.
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
-        
-        {/* Call to Action */}
-        <section className="py-20 bg-gradient-to-r from-gray-900 to-black">
-          <div className="container mx-auto px-4 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="max-w-3xl mx-auto"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                Need Emergency HVAC Service?
-              </h2>
-              <p className="text-xl text-gray-300 mb-10">
-                Call our 24/7 emergency hotline for immediate assistance
-              </p>
-              <a 
-                href="tel:+1234567890" 
-                className="inline-flex items-center justify-center bg-primary hover:bg-red-700 text-white font-bold py-4 px-10 rounded-lg transition duration-300 text-xl"
-              >
-                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Call Emergency Service
-              </a>
-            </motion.div>
           </div>
         </section>
       </main>
       
       <Footer />
-      <BackToTop />
     </div>
   );
 }
