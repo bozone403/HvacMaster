@@ -12,6 +12,8 @@ import BeforeAfterGallery from "@/components/BeforeAfterGallery";
 import EnergySavingsCalculator from "@/components/EnergySavingsCalculator";
 import EnhancedTestimonials from "@/components/EnhancedTestimonials";
 import AuthorityIndicators from "@/components/AuthorityIndicators";
+import GoogleReviews from "@/components/GoogleReviews";
+import GoogleBusinessBadge from "@/components/GoogleBusinessBadge";
 
 interface HomeProps {
   openBookingCalendar?: (service?: string) => void;
@@ -142,6 +144,43 @@ export default function Home({ openBookingCalendar }: HomeProps) {
         
         {/* Authority Indicators and Trust Badges */}
         <AuthorityIndicators />
+        
+        {/* Google Business Reviews */}
+        <div className="bg-gray-900 py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Trusted by <span className="text-primary">Calgary Homeowners</span>
+              </h2>
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                See what our customers are saying on Google about our HVAC services
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <GoogleReviews />
+              </div>
+              <div>
+                <GoogleBusinessBadge />
+                <div className="mt-4 text-center p-4 bg-black rounded-lg border border-gray-800">
+                  <p className="text-gray-400 mb-2">Find us on Google</p>
+                  <a 
+                    href="https://g.co/kgs/2YoRKzS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center w-full bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+                  >
+                    <span className="mr-2">View Our Business Profile</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         
         {/* Call to Action Section */}
         <section className="bg-primary py-16">
