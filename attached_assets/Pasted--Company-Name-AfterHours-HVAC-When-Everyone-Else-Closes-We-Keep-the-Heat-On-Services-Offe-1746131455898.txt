@@ -1,0 +1,118 @@
+🔧 Company Name
+AfterHours HVAC
+
+“When Everyone Else Closes, We Keep the Heat On.”
+
+🧰 Services Offered (Full-Service Scope)
+Residential & Light Commercial:
+
+Furnace Installation & Repair (High-Efficiency Systems, Goodman/Lennox/Trane/Carrier)
+
+Central & Ductless AC Installation, Charging, Repair
+
+Boiler & Hydronic Heating Systems (In-floor, Radiator, Combo Units)
+
+Ductwork Design & Static Pressure Balancing
+
+Gas Line Installation (CSA B149.1 Compliant)
+
+HRV/ERV Ventilation System Installs
+
+Indoor Air Quality Optimization (HEPA, UV, Humidification)
+
+Sheet Metal Fabrication (Custom Fittings, Chimney Caps, Flashing)
+
+Preventive Maintenance Programs
+
+Emergency After-Hours Service (Nights, Weekends, Holidays)
+
+Thermostat Installations (Ecobee, Nest, Communicating Systems)
+
+We do it all — installation, service, maintenance, upgrades, and full-system replacements — and we do it code-tight, every time.
+
+📍 Geographic Service Area
+Primary Coverage:
+
+Lethbridge, Alberta
+
+Calgary, Alberta
+
+Coaldale, Taber, Fort Macleod, and surrounding rural zones
+
+Optional Map Integration:
+→ We’ll use a custom Google Maps embed to highlight service radius + pin for after-hours availability.
+
+🎨 Design Preferences
+Style: Clean, modern, trade-forward.
+
+Tone: Professional but relatable.
+
+Color Palette:
+
+Matte black base
+
+Steel grey accents
+
+Red and copper highlights
+
+White space to keep it breathable
+
+Typography: Strong but legible — bold headlines, clean body text
+
+Imagery: Action shots of installs, techs in uniform, field photos, tool closeups
+
+🧩 Website Key Features (All Included)
+Feature	Notes
+✅ Service Area Map	Custom Google Map showing coverage, drop pins for responsiveness
+✅ Online Scheduling	Integrated booking form for maintenance & quotes
+✅ Emergency Contact Form	Flagged “AFTER HOURS” badge — SMS or email alert
+✅ Customer Testimonials	Highlight top Google Reviews or hand-collected quotes
+✅ Financing Options	Optional module w/ Stripe or links to vendor financing
+✅ Maintenance Plan Details	Breakdown of tiers (Basic, Gold, Platinum), with PDF download
+✅ Meet the Team Page	Includes bios of Jordan, Earl, Derek + AI Support Team
+✅ Mobile Optimized	Lightning-fast Replit/Hostinger deployment w/ responsive design
+✅ SEO-Driven Content	Keyword-rich copy embedded across homepage, service pages, and blog
+
+⚙️ Back-End Structure
+Fast load times (Replit + Hostinger = efficient stack)
+
+Clean HTML/CSS/JS — scalable for feature additions (CRM, chat widget, AI forms)
+
+Google Business Schema integration
+
+Yelp & GMB linking
+
+CRM-ready data capture from forms
+
+🧠 SEO-Focused Meta Summary (Suggested Homepage Snippet)
+AfterHours HVAC provides 24/7 emergency heating and cooling service in Lethbridge, Calgary, and across southern Alberta. We install, repair, and maintain furnaces, air conditioners, duct systems, hydronic heating, and ventilation units. Certified, insured, and always code-compliant — when others close, we keep the heat on.
+
+Top Keywords:
+
+Lethbridge HVAC repair
+
+After-hours furnace repair
+
+Calgary AC installation
+
+Hydronic heating Alberta
+
+Emergency HVAC services
+
+HVAC near me Alberta
+
+Indoor air quality Lethbridge
+
+Sheet metal ductwork services
+
+Gas line installation Alberta
+
+✅ Summary — Ready to Build
+Field	Value
+Company Name	AfterHours HVAC
+Services	Full-scope HVAC (residential/commercial)
+Service Area	Lethbridge, Calgary, rural Alberta
+Style	Modern, clean, black/grey/red palette
+Features	Scheduling, emergency form, map, reviews, AI-powered team showcase
+Platform	Replit backend, Hostinger frontend (confirmed)
+SEO-Ready?	✅ Fully optimized, keywords embedded
