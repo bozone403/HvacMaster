@@ -36,15 +36,11 @@ const EmergencyForm = () => {
   const onSubmit = async (data: EmergencyFormData) => {
     setIsSubmitting(true);
     try {
-      await apiRequest("/api/emergency-requests", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      await apiRequest("POST", "/api/emergency-requests", data);
       
       toast({
         title: "Emergency request sent!",
         description: "Our team will contact you within 15 minutes.",
-        variant: "success",
       });
       
       reset();

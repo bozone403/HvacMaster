@@ -40,15 +40,11 @@ const ReferralProgram = () => {
   const onSubmit = async (data: ReferralFormData) => {
     setIsSubmitting(true);
     try {
-      await apiRequest('/api/referrals', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      await apiRequest('POST', '/api/referrals', data);
       
       toast({
         title: 'Referral Successful!',
         description: 'Thanks for referring your friend. You\'ll receive your reward once they become a customer.',
-        variant: 'success',
       });
       
       reset();
