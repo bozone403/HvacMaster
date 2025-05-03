@@ -57,13 +57,7 @@
   }
 }
 
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
-}
+/* Inter font is already loaded via the HTML head - see client/index.html */
 
 @layer components {
   .container {
