@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
+import GoogleBusinessBadge from "@/components/GoogleBusinessBadge";
 import { fieldTeam, aiTeam } from "@/data/teamMembers";
 
 const About = () => {
@@ -249,6 +250,46 @@ const About = () => {
                 <p className="text-gray-400">
                   We continuously train our team and educate our clients about their systems for optimal performance.
                 </p>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Google Business Section */}
+        <section className="py-16 bg-black">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4 text-white">
+                  Find Us on <span className="text-primary">Google</span>
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto">
+                  See what our customers are saying and connect with us on Google
+                </p>
+              </div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="max-w-md mx-auto"
+              >
+                <GoogleBusinessBadge />
+                
+                <div className="text-center mt-6">
+                  <a 
+                    href="https://g.co/kgs/2YoRKzS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-primary hover:text-primary/80 transition-colors"
+                  >
+                    <span>View our full profile</span>
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
               </motion.div>
             </div>
           </div>
