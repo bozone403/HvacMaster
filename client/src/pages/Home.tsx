@@ -7,7 +7,6 @@ import EmergencyForm from "@/components/EmergencyForm";
 import ServiceHighlights from "@/components/ServiceHighlights";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
-import ReferralProgram from "@/components/ReferralProgram";
 import BackToTop from "@/components/BackToTop";
 
 interface HomeProps {
@@ -134,9 +133,6 @@ export default function Home({ openBookingCalendar }: HomeProps) {
         {/* Testimonials Section */}
         <TestimonialsSection />
         
-        {/* Referral Program Section */}
-        <ReferralProgram />
-        
         {/* Call to Action Section */}
         <section className="bg-primary py-16">
           <div className="container mx-auto px-4 text-center">
@@ -154,8 +150,13 @@ export default function Home({ openBookingCalendar }: HomeProps) {
                 </button>
               </Link>
               <Link href="/quote">
-                <button className="bg-black hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none">
+                <button className="bg-black hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none mr-4">
                   Get a Free Quote
+                </button>
+              </Link>
+              <Link href="/referral">
+                <button className="mt-4 sm:mt-0 bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none">
+                  Referral Program & Discounts
                 </button>
               </Link>
             </div>
