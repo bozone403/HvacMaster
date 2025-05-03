@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { Clock, X, Award, AlertTriangle, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useToast } from '@/hooks/use-toast';
 
 interface UrgencyPopupProps {
   onClose: () => void;
@@ -12,6 +14,8 @@ interface UrgencyPopupProps {
 export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
   const [countdown, setCountdown] = useState<number>(15 * 60);
   const [tab, setTab] = useState<string>('limited');
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
   
   // Format countdown as MM:SS
   const formatTime = (seconds: number): string => {
@@ -29,6 +33,8 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
       current: '$0',
       description: 'With any high-efficiency furnace installation',
       badge: 'Most Popular',
+      productId: 'furnace-high-efficiency',
+      promoCode: 'FREETHERMOSTAT',
     },
     {
       id: 2,
@@ -36,6 +42,8 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
       original: '$399',
       current: '$339',
       description: 'Complete tune-up and safety inspection for your heating system',
+      productId: 'maintenance-gold',
+      promoCode: 'WINTER15',
     },
     {
       id: 3,
@@ -44,6 +52,8 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
       current: '$0',
       description: 'With any premium HVAC system purchase',
       badge: 'Best Value',
+      productId: 'furnace-premium',
+      promoCode: '5YEARFREE',
     },
   ];
   
@@ -69,6 +79,46 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
       default:
         return 'text-green-500';
     }
+  };
+  
+  // Start a timer to update the countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => prev > 0 ? prev - 1 : 0);
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+  
+  // Handle claiming an offer
+  const handleClaimOffer = (offer: any) => {
+    // Save offer to localStorage to use in cart
+    localStorage.setItem('claimedOffer', JSON.stringify({
+      productId: offer.productId,
+      promoCode: offer.promoCode,
+      title: offer.title
+    }));
+    
+    // Show toast notification
+    toast({
+      title: "Offer Added!",
+      description: `${offer.title} has been added to your cart!`,
+    });
+    
+    // Navigate to purchase page with the product ID
+    navigate(`/purchase?product=${offer.productId}&promo=${offer.promoCode}`);
+    onClose();
+  };
+  
+  // Handle priority booking
+  const handlePriorityBooking = (area: string) => {
+    localStorage.setItem('priorityBooking', JSON.stringify({
+      area: area,
+      priorityFee: 99,
+    }));
+    
+    navigate('/booking?priority=true');
+    onClose();
   };
   
   return (
@@ -149,7 +199,11 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
                         <span className="text-primary font-bold text-xl">{offer.current}</span>
                       </div>
                       <p className="text-gray-400 text-sm mb-4">{offer.description}</p>
-                      <Button className="w-full" variant="default">
+                      <Button 
+                        className="w-full" 
+                        variant="default"
+                        onClick={() => handleClaimOffer(offer)}
+                      >
                         Claim Offer
                       </Button>
                     </div>
@@ -208,7 +262,12 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button size="sm" variant="outline" className="text-xs">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="text-xs"
+                                    onClick={() => handlePriorityBooking(area.area)}
+                                  >
                                     Book Priority Service
                                   </Button>
                                 </TooltipTrigger>
@@ -234,7 +293,7 @@ export default function UrgencyPopup({ onClose }: UrgencyPopupProps) {
                       <p className="text-gray-400 text-sm">Our emergency service rates are higher than standard appointments</p>
                     </div>
                   </div>
-                  <Button>
+                  <Button onClick={() => navigate('/booking')}>
                     Book Now
                   </Button>
                 </div>
