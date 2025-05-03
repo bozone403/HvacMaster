@@ -166,7 +166,7 @@ const PricingSection = () => {
               title="Bronze Plan"
               category="maintenance"
               tier="standard"
-              price={199}
+              price={275}
               isAnnual
               features={[
                 '1 Furnace Tune-Up per year',
@@ -183,7 +183,7 @@ const PricingSection = () => {
               title="Gold Plan"
               category="maintenance"
               tier="high-efficiency"
-              price={349}
+              price={899}
               popular
               isAnnual
               features={[
@@ -201,7 +201,7 @@ const PricingSection = () => {
               title="Platinum Plan"
               category="maintenance"
               tier="premium"
-              price={499}
+              price={2500}
               isAnnual
               features={[
                 'Full Spring + Fall service',

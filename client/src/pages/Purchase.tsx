@@ -67,7 +67,7 @@ const products: Product[] = [
     id: 'plan-bronze',
     name: 'Bronze Maintenance Plan',
     description: 'Basic annual maintenance plan with one furnace tune-up per year and 10% discount on repairs.',
-    price: 199,
+    price: 275,
     category: 'maintenance',
     isAnnual: true
   },
@@ -75,7 +75,7 @@ const products: Product[] = [
     id: 'plan-gold',
     name: 'Gold Maintenance Plan',
     description: 'Enhanced maintenance plan with furnace and A/C service, priority booking, and 12% discount on repairs.',
-    price: 349,
+    price: 899,
     category: 'maintenance',
     isAnnual: true
   },
@@ -83,7 +83,7 @@ const products: Product[] = [
     id: 'plan-platinum',
     name: 'Platinum Maintenance Plan',
     description: 'Premium maintenance plan with full spring and fall service, emergency fees waived, and 15% discount on all work.',
-    price: 499,
+    price: 2500,
     category: 'maintenance',
     isAnnual: true
   }

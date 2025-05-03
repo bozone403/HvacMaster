@@ -45,7 +45,7 @@ export default function Home({ openBookingCalendar }: HomeProps) {
       title: "Maintenance Plans",
       description: "Preventative maintenance programs to keep your systems running efficiently.",
       icon: "fa-tools",
-      price: "$199/year",
+      price: "$275/year",
       priceLabel: "Bronze Plan"
     },
     {
