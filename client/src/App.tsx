@@ -4,6 +4,7 @@ import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Purchase from "@/pages/Purchase";
 import Referral from "@/pages/Referral";
+import Quote from "@/pages/Quote";
 import NotFound from "@/pages/NotFound";
 import ExitIntentPopup from "@/components/modals/ExitIntentPopup";
 import BookingCalendar from "@/components/modals/BookingCalendar";
@@ -76,9 +77,7 @@ function App() {
         <Route path="/booking">
           {() => <div className="min-h-screen flex items-center justify-center">Booking page coming soon</div>}
         </Route>
-        <Route path="/quote">
-          {() => <div className="min-h-screen flex items-center justify-center">Quote page coming soon</div>}
-        </Route>
+        <Route path="/quote" component={Quote} />
         <Route path="/contact">
           {() => <div className="min-h-screen flex items-center justify-center">Contact page coming soon</div>}
         </Route>
