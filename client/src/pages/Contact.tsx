@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import GoogleMapsLocation from '@/components/GoogleMapsLocation';
+import GoogleReviews from '@/components/GoogleReviews';
+import GoogleBusinessBadge from '@/components/GoogleBusinessBadge';
 
 // Define form schema
 const contactFormSchema = z.object({
