@@ -1,9 +1,16 @@
 import { Switch, Route } from "wouter";
 import { useState, useEffect } from "react";
 import Home from "@/pages/Home";
+import About from "@/pages/About";
+import Purchase from "@/pages/Purchase";
+import Referral from "@/pages/Referral";
 import NotFound from "@/pages/NotFound";
 import ExitIntentPopup from "@/components/modals/ExitIntentPopup";
 import BookingCalendar from "@/components/modals/BookingCalendar";
+import PricingSection from "@/components/PricingSection";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
 
 // Import all page components
 function App() {
@@ -54,15 +61,17 @@ function App() {
             />
           )} 
         />
-        {/* Add additional routes - these pages will be created */}
-        <Route path="/about">
-          {() => <div className="min-h-screen flex items-center justify-center">About page coming soon</div>}
-        </Route>
+        {/* Main pages */}
+        <Route path="/about" component={About} />
+        <Route path="/referral" component={Referral} />
+        <Route path="/purchase" component={Purchase} />
+        
+        {/* Pages still in development */}
         <Route path="/gallery">
           {() => <div className="min-h-screen flex items-center justify-center">Gallery page coming soon</div>}
         </Route>
         <Route path="/pricing">
-          {() => <div className="min-h-screen flex items-center justify-center">Pricing page coming soon</div>}
+          {() => <div className="flex flex-col min-h-screen"><Header /><div className="flex-grow flex items-center justify-center"><PricingSection /></div><Footer /><BackToTop /></div>}
         </Route>
         <Route path="/booking">
           {() => <div className="min-h-screen flex items-center justify-center">Booking page coming soon</div>}
@@ -70,17 +79,11 @@ function App() {
         <Route path="/quote">
           {() => <div className="min-h-screen flex items-center justify-center">Quote page coming soon</div>}
         </Route>
-        <Route path="/purchase">
-          {() => <div className="min-h-screen flex items-center justify-center">Purchase page coming soon</div>}
-        </Route>
         <Route path="/contact">
           {() => <div className="min-h-screen flex items-center justify-center">Contact page coming soon</div>}
         </Route>
-        <Route path="/referral">
-          {() => <div className="min-h-screen flex items-center justify-center">Referral page coming soon</div>}
-        </Route>
-        <Route path="/payment-confirmation">
-          {() => <div className="min-h-screen flex items-center justify-center">Payment confirmation page coming soon</div>}
+        <Route path="/purchase-confirmation">
+          {() => <div className="min-h-screen flex items-center justify-center">Thank you for your purchase! We'll contact you shortly to confirm your installation details.</div>}
         </Route>
         
         <Route component={NotFound} />
